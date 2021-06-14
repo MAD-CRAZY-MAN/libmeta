@@ -7,7 +7,7 @@ Serial_Port::Serial_Port()
 	fd     = -1;
 	is_open = false;
 
-	uart_name = (char*)"/dev/ttyACM1";
+	uart_name = (char*)"/dev/ttyACM0";
 	baudrate  = 57600;
 
 	// Start mutex
@@ -224,8 +224,6 @@ read_message(mavlink_message_t &message)
 
 	// this function locks the port during read
 	int result = _read_port(cp);
-
-
 	// --------------------------------------------------------------------------
 	//   PARSE MESSAGE
 	// --------------------------------------------------------------------------
@@ -243,7 +241,6 @@ read_message(mavlink_message_t &message)
 		}
 		lastStatus = status;
 	}
-
 	// Couldn't read from port
 	else
 	{
@@ -286,11 +283,9 @@ read_message(mavlink_message_t &message)
 	// Done!
 	return msgReceived;
 }
-int
-Serial_Port::
-_read_port(uint8_t &cp)
-{
 
+int Serial_Port::_read_port(uint8_t &cp)
+{
 	// Lock
 	pthread_mutex_lock(&lock);
 

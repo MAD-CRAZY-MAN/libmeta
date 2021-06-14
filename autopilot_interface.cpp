@@ -39,29 +39,31 @@ void Autopilot_Interface::start()
 	// --------------------------------------------------------------------------
 	//   CHECK PORT
 	// --------------------------------------------------------------------------
-    printf("Autopilot_Interface::start");
+    printf("Autopilot_Interface::start\n");
 	if ( !port->is_running() ) // PORT_OPEN
 	{
 		fprintf(stderr,"ERROR: port not open\n");
         return;
 	}
+	printf("is_running\n");
 
     result = pthread_create(&read_tid, NULL, &start_autopilot_interface_read_thread, this);
+	printf("%d\n", result);
 }
 
 void Autopilot_Interface::stop()
 {
     printf("close threads\n");
 
-    time_to_exit = true;
+  //  time_to_exit = true;
 
     pthread_join(read_tid, NULL);
-    pthread_join(write_tid, NULL);
+   // pthread_join(write_tid, NULL);
 }
 
 void* start_autopilot_interface_read_thread(void *args)
 {
-    printf("start_autopilot_interface_read_thread");
+    printf("start_autopilot_interface_read_thread\n");
     Autopilot_Interface *autopilot_interface = (Autopilot_Interface *)args;
 
     autopilot_interface->start_read_thread();
@@ -71,7 +73,7 @@ void* start_autopilot_interface_read_thread(void *args)
 
 void Autopilot_Interface::start_read_thread()
 {
-    printf("Autopilot_Interface::start_read_thread");
+    printf("Autopilot_Interface::start_read_thread\n");
 
     if(reading_status != 0)
     {
@@ -87,7 +89,7 @@ void Autopilot_Interface::start_read_thread()
 
 void Autopilot_Interface::read_thread()
 {
-    printf("Autopilot_Interface::read_thread");
+    printf("Autopilot_Interface::read_thread\n");
     reading_status = true;
 
     while(!time_to_exit)
@@ -105,38 +107,41 @@ void Autopilot_Interface::read_message()
     bool success;
     bool received_all = false;
     Time_Stamps this_timestamps;
-    printf("Autopilot_Interface::read_message");
+    
     // Blocking wait for new data
-	while ( !received_all and !time_to_exit )
+	while (!time_to_exit )
 	{
 		// ----------------------------------------------------------------------
 		//   READ MESSAGE
 		// ----------------------------------------------------------------------
 		mavlink_message_t message;
 		success = port->read_message(message);
-
+		//printf("read thread\n");
+		//printf("succes: %d\n", success);
 		// ----------------------------------------------------------------------
 		//   HANDLE MESSAGE
 		// ----------------------------------------------------------------------
 		if( success )
 		{
-
 			// Store message sysid and compid.
 			// Note this doesn't handle multiple message sources.
 			current_messages.sysid  = message.sysid;
 			current_messages.compid = message.compid;
-            // Handle Message ID
+            // Handle Message 
+			printf("message id: %d\n", message.msgid);
 			switch (message.msgid)
 			{
-
 				case MAVLINK_MSG_ID_HEARTBEAT:
 				{
-					//printf("MAVLINK_MSG_ID_HEARTBEAT\n");
 					mavlink_msg_heartbeat_decode(&message, &(current_messages.heartbeat));
 					current_messages.time_stamps.heartbeat = get_time_usec();
 					this_timestamps.heartbeat = current_messages.time_stamps.heartbeat;
-                    printf("%d", message.msgid);
-					break;
+                    break;
+				}
+				case MAVLINK_MSG_ID_ATTITUDE:
+				{
+					mavlink_msg_attitude_decode(&message, &(current_messages.attitude));
+
 				}
                 default:
                     break;
@@ -160,7 +165,6 @@ void Autopilot_Interface::read_message()
             if ( writing_status > false ) {
                 usleep(100); // look for components of batches at 10kHz
             }
-
-	    } // end: while not received all
+    } // end: while not received all
 	return;
 }

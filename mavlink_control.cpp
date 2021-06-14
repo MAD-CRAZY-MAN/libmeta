@@ -7,9 +7,9 @@ int main(int argc, char **argv)
 
     port.start();
     autopilot_interface.start();
-    sleep(10);
+   // sleep(1);
     autopilot_interface.stop();
-    port.stop();
+   // port.stop();
 
     return 0;
 }

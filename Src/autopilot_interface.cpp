@@ -49,7 +49,7 @@ void Autopilot_Interface::start()
 	printf("is_running\n");
 
     result = pthread_create(&read_tid, NULL, &start_autopilot_interface_read_thread, this);
-	printf("%d\n", result);
+	
 }
 
 void Autopilot_Interface::stop()

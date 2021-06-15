@@ -210,9 +210,7 @@ bool Serial_Port::_setup_port(int baud, int data_bits, int stop_bits, bool parit
 	return true;
 }
 
-int
-Serial_Port::
-read_message(mavlink_message_t &message)
+int Serial_Port::read_message(mavlink_message_t &message)
 {
 	uint8_t          cp;
 	mavlink_status_t status;

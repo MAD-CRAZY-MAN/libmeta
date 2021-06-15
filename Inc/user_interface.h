@@ -15,6 +15,7 @@ class Xvd_Metadata
         void xvd_metadata_query_sensor_attitude();
         void xvd_metadata_query_fov();
         uint64_t time_unix_usec = 0;
+        
     private:
         
 

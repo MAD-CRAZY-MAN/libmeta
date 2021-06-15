@@ -17,7 +17,7 @@ class Serial_Port
         ~Serial_Port();
         
         int read_message(mavlink_message_t &message);
-        int write_message(mavlink_message_t &message);
+        int write_message(const mavlink_message_t &message);
 
         bool is_running(){
             return is_open;

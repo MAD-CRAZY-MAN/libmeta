@@ -7,7 +7,7 @@ uint64_t get_time_usec()
 	return _time_stamp.tv_sec*1000000 + _time_stamp.tv_usec;
 }
 
-Autopilot_Interface::Autopilot_Interface(Serial_Port &port_)
+Autopilot_Interface::Autopilot_Interface(Serial_Port &port_, Xvd_Metadata &metadata_)
 {
     // initialize attributes
 	write_count = 0;
@@ -27,6 +27,7 @@ Autopilot_Interface::Autopilot_Interface(Serial_Port &port_)
 	current_messages.sysid  = system_id;
 	current_messages.compid = autopilot_id;
     port = &port_;
+	metadata = &metadata_;
 }
 
 Autopilot_Interface::~Autopilot_Interface()
@@ -107,7 +108,7 @@ void Autopilot_Interface::read_message()
     bool success;
     bool received_all = false;
     Time_Stamps this_timestamps;
-    
+    uint32_t count = 0;
     // Blocking wait for new data
 	while (!time_to_exit )
 	{
@@ -128,7 +129,7 @@ void Autopilot_Interface::read_message()
 			current_messages.sysid  = message.sysid;
 			current_messages.compid = message.compid;
             // Handle Message 
-			printf("message id: %d\n", message.msgid);
+			//printf("message id: %d\n", message.msgid);
 			switch (message.msgid)
 			{
 				case MAVLINK_MSG_ID_HEARTBEAT:
@@ -142,6 +143,14 @@ void Autopilot_Interface::read_message()
 				{
 					mavlink_msg_attitude_decode(&message, &(current_messages.attitude));
 
+					break;
+				}
+				case MAVLINK_MSG_ID_SYSTEM_TIME:
+				{
+					mavlink_system_time_t packet;
+					mavlink_msg_system_time_decode(&message, &packet);
+					metadata->time_unix_usec = packet.time_boot_ms;
+					printf("timestamp: %ld\n", metadata->time_unix_usec);
 				}
                 default:
                     break;
@@ -167,4 +176,23 @@ void Autopilot_Interface::read_message()
             }
     } // end: while not received all
 	return;
+}
+
+int Autopilot_Interface::request_message(uint32_t msg_id, uint32_t interval_us)
+{
+	mavlink_command_long_t set_msg_interval = {0};
+	set_msg_interval.target_system = 1;
+	set_msg_interval.target_component = 1;
+	set_msg_interval.command = MAV_CMD_SET_MESSAGE_INTERVAL;
+	set_msg_interval.confirmation = 0;
+	set_msg_interval.param1 = msg_id;
+	set_msg_interval.param2 = interval_us;
+	set_msg_interval.param7 = 0;
+
+	mavlink_message_t message;
+	mavlink_msg_command_long_encode(1, 195, &message, &set_msg_interval);
+
+	int len = port->write_message(message);
+
+	return len;
 }

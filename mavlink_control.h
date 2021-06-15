@@ -18,5 +18,6 @@ using namespace std;
 
 #include "serial_port.h"
 #include "autopilot_interface.h"
+#include "user_interface.h"
 
 int main(int argc, char **argv);

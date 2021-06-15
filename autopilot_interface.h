@@ -2,6 +2,7 @@
 #define AUTOPILOT_INTERFACE_H_
 
 #include "serial_port.h"
+#include "user_interface.h"
 
 #include <signal.h>
 #include <time.h>
@@ -11,6 +12,7 @@
 #include <mutex>
 
 #include <common/mavlink.h>
+
 
 uint64_t get_time_usec();
 void* start_autopilot_interface_read_thread(void *args);
@@ -50,6 +52,7 @@ struct Time_Stamps
 	}
 
 };
+
 struct Mavlink_Messages {
 
 	int sysid;
@@ -85,6 +88,7 @@ struct Mavlink_Messages {
 	// Attitude
 	mavlink_attitude_t attitude;
 
+	mavlink_system_time_t system_time;
 	// System Parameters?
 
 
@@ -102,7 +106,7 @@ struct Mavlink_Messages {
 class Autopilot_Interface
 {
     public:
-        Autopilot_Interface(Serial_Port &port_);
+        Autopilot_Interface(Serial_Port &port_, Xvd_Metadata &metadata_);
         ~Autopilot_Interface();
         
         char reading_status;
@@ -122,11 +126,14 @@ class Autopilot_Interface
         void start_read_thread();
         void start_write_thread(void);
 
+		int request_message(uint32_t msg_id, uint32_t interval_us);
+
         void start();
         void stop();
 
     private:
         Serial_Port *port;
+		Xvd_Metadata *metadata;
 
         bool time_to_exit;
 

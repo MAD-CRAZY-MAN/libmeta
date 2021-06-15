@@ -311,3 +311,35 @@ void Serial_Port::stop()
 	printf("\n");
 
 }
+
+int Serial_Port::write_message(const mavlink_message_t &message)
+{
+	char buf[300];
+
+	// Translate message to buffer
+	unsigned len = mavlink_msg_to_send_buffer((uint8_t*)buf, &message);
+
+	// Write buffer to serial port, locks port while writing
+	int bytesWritten = _write_port(buf,len);
+
+	return bytesWritten;
+}
+
+int Serial_Port::_write_port(char *buf, unsigned len)
+{
+
+	// Lock
+	pthread_mutex_lock(&lock);
+
+	// Write packet via serial link
+	const int bytesWritten = static_cast<int>(write(fd, buf, len));
+
+	// Wait until all data has been written
+	tcdrain(fd);
+
+	// Unlock
+	pthread_mutex_unlock(&lock);
+
+
+	return bytesWritten;
+}

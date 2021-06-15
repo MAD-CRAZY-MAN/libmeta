@@ -1,4 +1,4 @@
-#include "mavlink_control.h"
+#include "../Inc/mavlink_control.h"
 
 int main(int argc, char **argv)
 {

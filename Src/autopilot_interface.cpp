@@ -1,4 +1,4 @@
-#include "autopilot_interface.h"
+#include "../Inc/autopilot_interface.h"
 // Struct containing information on the MAV we are currently connected to
 uint64_t get_time_usec()
 {

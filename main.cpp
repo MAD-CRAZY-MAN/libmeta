@@ -2,11 +2,10 @@
 
 int main(int argc, char **argv)
 {
-    Serial_Port port;
+    //Serial_Port port;
     Xvd_Metadata metadata;
-    Autopilot_Interface autopilot_interface(port, metadata);
+    Autopilot_Interface autopilot_interface(metadata);
 
-    port.start();
     autopilot_interface.start();
     autopilot_interface.request_message(30, 33333);
     autopilot_interface.request_message(2, 1000000);

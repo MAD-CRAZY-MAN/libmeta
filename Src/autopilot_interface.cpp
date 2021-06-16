@@ -1,13 +1,6 @@
 #include "../Inc/autopilot_interface.h"
-// Struct containing information on the MAV we are currently connected to
-uint64_t get_time_usec()
-{
-	static struct timeval _time_stamp;
-	gettimeofday(&_time_stamp, NULL);
-	return _time_stamp.tv_sec*1000000 + _time_stamp.tv_usec;
-}
 
-Autopilot_Interface::Autopilot_Interface(Serial_Port &port_, Xvd_Metadata &metadata_)
+Autopilot_Interface::Autopilot_Interface(Xvd_Metadata &metadata_)
 {
     // initialize attributes
 	write_count = 0;
@@ -24,9 +17,7 @@ Autopilot_Interface::Autopilot_Interface(Serial_Port &port_, Xvd_Metadata &metad
 	autopilot_id = 0; // autopilot component id
 	companion_id = 0; // companion computer component id
 
-	current_messages.sysid  = system_id;
-	current_messages.compid = autopilot_id;
-    port = &port_;
+    //port = &port_;
 	metadata = &metadata_;
 }
 
@@ -35,21 +26,20 @@ Autopilot_Interface::~Autopilot_Interface()
 
 void Autopilot_Interface::start()
 {
-	int result;
+	Serial_Port::start();
 
 	// --------------------------------------------------------------------------
 	//   CHECK PORT
 	// --------------------------------------------------------------------------
     printf("Autopilot_Interface::start\n");
-	if ( !port->is_running() ) // PORT_OPEN
+	if ( !Serial_Port::is_running() ) // PORT_OPEN
 	{
 		fprintf(stderr,"ERROR: port not open\n");
         return;
 	}
 	printf("is_running\n");
 
-    result = pthread_create(&read_tid, NULL, &start_autopilot_interface_read_thread, this);
-	
+    pthread_create(&read_tid, NULL, &start_autopilot_interface_read_thread, this);
 }
 
 void Autopilot_Interface::stop()
@@ -62,7 +52,7 @@ void Autopilot_Interface::stop()
    // pthread_join(write_tid, NULL);
 }
 
-void* start_autopilot_interface_read_thread(void *args)
+void *start_autopilot_interface_read_thread(void *args)
 {
     printf("start_autopilot_interface_read_thread\n");
     Autopilot_Interface *autopilot_interface = (Autopilot_Interface *)args;
@@ -106,9 +96,7 @@ void Autopilot_Interface::read_thread()
 void Autopilot_Interface::read_message()
 {
     bool success;
-    bool received_all = false;
-    Time_Stamps this_timestamps;
-    uint32_t count = 0;
+  
     // Blocking wait for new data
 	while (!time_to_exit )
 	{
@@ -116,7 +104,7 @@ void Autopilot_Interface::read_message()
 		//   READ MESSAGE
 		// ----------------------------------------------------------------------
 		mavlink_message_t message;
-		success = port->read_message(message);
+		success = Serial_Port::read_message(message);
 		//printf("read thread\n");
 		//printf("succes: %d\n", success);
 		// ----------------------------------------------------------------------
@@ -124,24 +112,21 @@ void Autopilot_Interface::read_message()
 		// ----------------------------------------------------------------------
 		if( success )
 		{
-			// Store message sysid and compid.
-			// Note this doesn't handle multiple message sources.
-			current_messages.sysid  = message.sysid;
-			current_messages.compid = message.compid;
-            // Handle Message 
+			// Handle Message 
 			//printf("message id: %d\n", message.msgid);
 			switch (message.msgid)
 			{
 				case MAVLINK_MSG_ID_HEARTBEAT:
 				{
-					mavlink_msg_heartbeat_decode(&message, &(current_messages.heartbeat));
-					current_messages.time_stamps.heartbeat = get_time_usec();
-					this_timestamps.heartbeat = current_messages.time_stamps.heartbeat;
+					mavlink_heartbeat_t packet;
+					mavlink_msg_heartbeat_decode(&message, &packet);
+					//store system id, comp id
                     break;
 				}
 				case MAVLINK_MSG_ID_ATTITUDE:
 				{
-					mavlink_msg_attitude_decode(&message, &(current_messages.attitude));
+					mavlink_attitude_t packet;
+					mavlink_msg_attitude_decode(&message, &packet);
 
 					break;
 				}
@@ -156,20 +141,6 @@ void Autopilot_Interface::read_message()
                     break;
             }
         }
-        // Check for receipt of all items
-		received_all =
-				this_timestamps.heartbeat                  &&
-//				this_timestamps.battery_status             &&
-//				this_timestamps.radio_status               &&
-//				this_timestamps.local_position_ned         &&
-//				this_timestamps.global_position_int        &&
-//				this_timestamps.position_target_local_ned  &&
-//				this_timestamps.position_target_global_int &&
-//				this_timestamps.highres_imu                &&
-//				this_timestamps.attitude                   &&
-				this_timestamps.sys_status
-				;
-
             // give the write thread time to use the port
             if ( writing_status > false ) {
                 usleep(100); // look for components of batches at 10kHz
@@ -192,7 +163,7 @@ int Autopilot_Interface::request_message(uint32_t msg_id, uint32_t interval_us)
 	mavlink_message_t message;
 	mavlink_msg_command_long_encode(1, 195, &message, &set_msg_interval);
 
-	int len = port->write_message(message);
+	int len = Serial_Port::write_message(message);
 
 	return len;
 }

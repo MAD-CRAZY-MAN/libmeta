@@ -6,6 +6,8 @@
 class Xvd_Metadata 
 {
     public:
+        Xvd_Metadata(){}
+        ~Xvd_Metadata(){}
         void xvd_metadata_query_init(); //ttyACM0
         void xvd_metadata_query_release(); //uart, thread 종료
 

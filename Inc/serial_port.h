@@ -14,6 +14,7 @@ class Serial_Port
 {
     public:
         Serial_Port();
+        Serial_Port(const char *uart_name_, int baudrate_);
         ~Serial_Port();
         
         int read_message(mavlink_message_t &message);
@@ -22,6 +23,7 @@ class Serial_Port
         bool is_running(){
             return is_open;
         }
+
         void start();
         void stop();
 
@@ -35,6 +37,7 @@ class Serial_Port
         bool is_open;
         bool debug;
 
+        void init_defaults();
         int  _open_port(const char* port);
         bool _setup_port(int baud, int data_bits, int stop_bits, bool parity, bool hardware_control);
         int  _read_port(uint8_t &cp);

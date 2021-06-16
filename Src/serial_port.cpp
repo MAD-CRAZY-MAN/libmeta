@@ -1,8 +1,20 @@
 #include "../Inc/serial_port.h"
 
+Serial_Port::Serial_Port(const char *uart_name_, int baudrate_)
+{
+	init_defaults();
+	uart_name = uart_name_;
+	baudrate = baudrate_;
+}
+
 Serial_Port::Serial_Port()
 {
-    // Initialize attributes
+	init_defaults();
+}
+
+void Serial_Port::init_defaults()
+{
+	// Initialize attributes
 	debug  = false;
 	fd     = -1;
 	is_open = false;
@@ -18,7 +30,6 @@ Serial_Port::Serial_Port()
 		throw 1;
 	}
 }
-
 Serial_Port::~Serial_Port()
 {
     pthread_mutex_destroy(&lock);

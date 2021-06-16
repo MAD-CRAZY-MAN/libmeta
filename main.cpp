@@ -2,33 +2,23 @@
 
 int main(int argc, char **argv)
 {
-    //Serial_Port port;
-    //Xvd_Metadata metadata;
-    Serial_Port port;
-    Autopilot_Interface autopilot_interface(port);
+    Platform_Attitude platform_attitude;
+    Time_Stamps time_stamps;
+    xvd_metadata_query_init();
 
-    autopilot_interface.start();
-    autopilot_interface.request_message(30, 33333);
-    autopilot_interface.request_message(2, 1000000);
-    // while(1)
-    // {
-    //     printf("timestamp: %ld\n", metadata.time_unix_usec);
-    //     sleep(1);
-    // }
-    autopilot_interface.stop();
-   // port.stop();
+    while(1)
+    {
+        time_stamps = xvd_metadata_query_timestamp();
+        platform_attitude = xvd_metadata_query_platform_attitude();
+
+        //printf("unix_time_stamp: %d", time_stamps.time_boot_ms);
+        printf("roll: %f\n", platform_attitude.roll_angle);
+        printf("pitch: %f\n", platform_attitude.pitch_angle);
+        printf("yaw: %f\n", platform_attitude.yaw_angle);
+        usleep(1);
+    }
+
+    xvd_metadata_query_release();
 
     return 0;
-
-    // xvd_metadata_query_init();
-    // xvd_metadata_query_release();
-
-    // uint64_t unix_time_stamp;
-
-    // while(1)
-    // {
-    //     unix_time_stamp = xvd_metadata_query_timestamp();
-    //     printf("unix_time_stamp: %ld", unix_time_stamp);
-    //     sleep(1);
-    // }
 }

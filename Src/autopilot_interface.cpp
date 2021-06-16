@@ -46,7 +46,6 @@ void Autopilot_Interface::stop()
   //  time_to_exit = true;
 
     pthread_join(read_tid, NULL);
-   // pthread_join(write_tid, NULL);
 }
 
 void *start_autopilot_interface_read_thread(void *args)
@@ -164,6 +163,9 @@ void Autopilot_Interface::handle_message(const mavlink_message_t &msg)
 		{
 			mavlink_attitude_t packet;
 			mavlink_msg_attitude_decode(&msg, &packet);
+			platform_attitude.roll_rad = packet.roll;
+			platform_attitude.pitch_rad = packet.pitch;
+			platform_attitude.yaw_rad = packet.yaw;
 
 			break;
 		}
@@ -171,9 +173,7 @@ void Autopilot_Interface::handle_message(const mavlink_message_t &msg)
 		{
 			mavlink_system_time_t packet;
 			mavlink_msg_system_time_decode(&msg, &packet);
-			time_unix_usec = packet.time_boot_ms;
-			
-			printf("timestamp: %ld\n", time_unix_usec);
+			time_stamps.time_boot_ms = packet.time_boot_ms;
 		}
 		default:
 			break;

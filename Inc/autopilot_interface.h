@@ -17,6 +17,21 @@
 void* start_autopilot_interface_read_thread(void *args);
 void* start_autopilot_interface_write_thread(void *args);
 
+struct Platform_Attitude
+{
+    float roll_rad;
+    float pitch_rad;
+    float yaw_rad;
+    float roll_angle;
+    float pitch_angle;
+    float yaw_angle;
+};
+struct Time_Stamps
+{
+    uint64_t time_unix_usec;
+    uint32_t time_boot_ms;
+};
+
 class Autopilot_Interface
 {
     public:
@@ -32,6 +47,8 @@ class Autopilot_Interface
         int autopilot_id;
         int companion_id;
 
+        Platform_Attitude platform_attitude;
+        Time_Stamps time_stamps;
         void update_receive();
         int write_message(const mavlink_message_t &message);
 

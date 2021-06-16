@@ -26,6 +26,8 @@ class Serial_Port
 
         int  open_port(const char* port);
         bool setup_port(int baud, int data_bits, int stop_bits, bool parity, bool hardware_control);
+
+        void register_port(const char *uart_name, int baudrate_);
         
         int  _read(uint8_t &cp);
         int _write(char *buf, unsigned len);

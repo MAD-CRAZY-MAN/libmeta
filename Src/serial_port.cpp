@@ -6,7 +6,11 @@ Serial_Port::Serial_Port(const char *uart_name_, int baudrate_)
 	uart_name = uart_name_;
 	baudrate = baudrate_;
 }
-
+void Serial_Port::register_port(const char *uart_name_, int baudrate_)
+{
+	uart_name = uart_name_;
+	baudrate = baudrate_;
+}
 Serial_Port::Serial_Port()
 {
 	init_defaults();

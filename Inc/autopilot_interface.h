@@ -33,8 +33,8 @@ class Autopilot_Interface : public Serial_Port
         int autopilot_id;
         int companion_id;
 
-        void read_message();
-        int write_message(mavlink_message_t message);
+        void update_receive();
+        int write_message(const mavlink_message_t &message);
 
         void start_read_thread();
         void start_write_thread(void);
@@ -52,6 +52,10 @@ class Autopilot_Interface : public Serial_Port
         pthread_t read_tid;
         pthread_t write_tid;
 
+        mavlink_status_t lastStatus;
+        
+        int read_message(mavlink_message_t &message);
+        void handle_message(const mavlink_message_t &msg);
         void read_thread();
         void write_thread(void);
 };

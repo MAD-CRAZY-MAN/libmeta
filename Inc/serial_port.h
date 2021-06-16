@@ -17,7 +17,6 @@ class Serial_Port
         Serial_Port(const char *uart_name_, int baudrate_);
         ~Serial_Port();
         
-        int read_message(mavlink_message_t &message);
         int write_message(const mavlink_message_t &message);
 
         bool is_running(){
@@ -28,16 +27,19 @@ class Serial_Port
         void stop();
 
     private:
-        int fd;
-        mavlink_status_t lastStatus;
-	    pthread_mutex_t  lock;
+        	    pthread_mutex_t  lock;
 
         const char *uart_name;
         int baudrate;
         bool is_open;
-        bool debug;
+        
 
         void init_defaults();
+        
+    protected:
+        bool debug;
+        int fd;
+        
         int  _open_port(const char* port);
         bool _setup_port(int baud, int data_bits, int stop_bits, bool parity, bool hardware_control);
         int  _read_port(uint8_t &cp);

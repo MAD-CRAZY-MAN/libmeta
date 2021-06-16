@@ -15,7 +15,6 @@ Serial_Port::Serial_Port()
 void Serial_Port::init_defaults()
 {
 	// Initialize attributes
-	debug  = false;
 	fd     = -1;
 	is_open = false;
 
@@ -37,7 +36,7 @@ Serial_Port::~Serial_Port()
 
 void Serial_Port::start()
 {
-    fd = _open_port(uart_name);
+    fd = open_port(uart_name);
 
     if (fd == -1)
     {
@@ -45,7 +44,7 @@ void Serial_Port::start()
         throw EXIT_FAILURE;
     }
 
-    bool success = _setup_port(baudrate, 8, 1, false, false);
+    bool success = setup_port(baudrate, 8, 1, false, false);
 
     // --------------------------------------------------------------------------
 	//   CHECK STATUS
@@ -71,7 +70,7 @@ void Serial_Port::start()
     return;
 }
 
-int Serial_Port::_open_port(const char* port)
+int Serial_Port::open_port(const char* port)
 {
     fd = open(port, O_RDWR | O_NOCTTY | O_NDELAY);
     if(fd == -1)
@@ -82,7 +81,7 @@ int Serial_Port::_open_port(const char* port)
     return fd;
 }
 
-bool Serial_Port::_setup_port(int baud, int data_bits, int stop_bits, bool parity, bool hardware_control)
+bool Serial_Port::setup_port(int baud, int data_bits, int stop_bits, bool parity, bool hardware_control)
 {
     // Check file descriptor
 	if(!isatty(fd))
@@ -221,7 +220,7 @@ bool Serial_Port::_setup_port(int baud, int data_bits, int stop_bits, bool parit
 	return true;
 }
 
-int Serial_Port::_read_port(uint8_t &cp)
+int Serial_Port::_read(uint8_t &cp)
 {
 	// Lock
 	pthread_mutex_lock(&lock);
@@ -249,7 +248,7 @@ void Serial_Port::stop()
 
 }
 
-int Serial_Port::_write_port(char *buf, unsigned len)
+int Serial_Port::_write(char *buf, unsigned len)
 {
 
 	// Lock

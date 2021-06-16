@@ -1,6 +1,6 @@
 #include "../Inc/autopilot_interface.h"
 
-Autopilot_Interface::Autopilot_Interface(Xvd_Metadata &metadata_)
+Autopilot_Interface::Autopilot_Interface(Serial_Port &port_)
 {
     // initialize attributes
 	write_count = 0;
@@ -17,8 +17,8 @@ Autopilot_Interface::Autopilot_Interface(Xvd_Metadata &metadata_)
 	autopilot_id = 0; // autopilot component id
 	companion_id = 0; // companion computer component id
 	lastStatus.packet_rx_drop_count = 0;
-    //port = &port_;
-	metadata = &metadata_;
+
+	port = &port_;
 }
 
 Autopilot_Interface::~Autopilot_Interface()
@@ -26,10 +26,10 @@ Autopilot_Interface::~Autopilot_Interface()
 
 void Autopilot_Interface::start()
 {
-	Serial_Port::start();
+	port->start();
 
 	//   CHECK PORT
-    if ( !Serial_Port::is_running() ) // PORT_OPEN
+    if ( !port->is_running() ) // PORT_OPEN
 	{
 		fprintf(stderr,"ERROR: port not open\n");
         return;
@@ -93,16 +93,9 @@ void Autopilot_Interface::update_receive()
     // Blocking wait for new data
 	while (!time_to_exit )
 	{
-		// ----------------------------------------------------------------------
-		//   READ MESSAGE
-		// ----------------------------------------------------------------------
 		mavlink_message_t msg;
 		success = read_message(msg);
-		//printf("read thread\n");
-		//printf("succes: %d\n", success);
-		// ----------------------------------------------------------------------
-		//   HANDLE MESSAGE
-		// ----------------------------------------------------------------------
+		
 		if( success )
 			handle_message(msg);
 
@@ -126,7 +119,7 @@ int Autopilot_Interface::read_message(mavlink_message_t &message)
 	// --------------------------------------------------------------------------
 
 	// this function locks the port during read
-	int result = _read_port(cp);
+	int result = port->_read(cp);
 	// --------------------------------------------------------------------------
 	//   PARSE MESSAGE
 	// --------------------------------------------------------------------------
@@ -136,7 +129,7 @@ int Autopilot_Interface::read_message(mavlink_message_t &message)
 		msgReceived = mavlink_parse_char(MAVLINK_COMM_1, cp, &message, &status);
 
 		// check for dropped packets
-		if ( (lastStatus.packet_rx_drop_count != status.packet_rx_drop_count) && debug )
+		if ( (lastStatus.packet_rx_drop_count != status.packet_rx_drop_count))
 		{
 			printf("ERROR: DROPPED %d PACKETS\n", status.packet_rx_drop_count);
 			unsigned char v=cp;
@@ -147,40 +140,7 @@ int Autopilot_Interface::read_message(mavlink_message_t &message)
 	// Couldn't read from port
 	else
 	{
-		fprintf(stderr, "ERROR: Could not read from fd %d\n", fd);
-	}
-
-	// --------------------------------------------------------------------------
-	//   DEBUGGING REPORTS
-	// --------------------------------------------------------------------------
-	if(msgReceived && debug)
-	{
-		// Report info
-		printf("Received message from serial with ID #%d (sys:%d|comp:%d):\n", message.msgid, message.sysid, message.compid);
-
-		fprintf(stderr,"Received serial data: ");
-		unsigned int i;
-		uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
-
-		// check message is write length
-		unsigned int messageLength = mavlink_msg_to_send_buffer(buffer, &message);
-
-		// message length error
-		if (messageLength > MAVLINK_MAX_PACKET_LEN)
-		{
-			fprintf(stderr, "\nFATAL ERROR: MESSAGE LENGTH IS LARGER THAN BUFFER SIZE\n");
-		}
-
-		// print out the buffer
-		else
-		{
-			for (i=0; i<messageLength; i++)
-			{
-				unsigned char v=buffer[i];
-				fprintf(stderr,"%02x ", v);
-			}
-			fprintf(stderr,"\n");
-		}
+		fprintf(stderr, "ERROR: Could not read from fd %d\n", port->fd);
 	}
 
 	// Done!
@@ -211,8 +171,9 @@ void Autopilot_Interface::handle_message(const mavlink_message_t &msg)
 		{
 			mavlink_system_time_t packet;
 			mavlink_msg_system_time_decode(&msg, &packet);
-			metadata->time_unix_usec = packet.time_boot_ms;
-			printf("timestamp: %ld\n", metadata->time_unix_usec);
+			time_unix_usec = packet.time_boot_ms;
+			
+			printf("timestamp: %ld\n", time_unix_usec);
 		}
 		default:
 			break;
@@ -227,7 +188,7 @@ int Autopilot_Interface::write_message(const mavlink_message_t &message)
 	unsigned len = mavlink_msg_to_send_buffer((uint8_t*)buf, &message);
 
 	// Write buffer to serial port, locks port while writing
-	int bytesWritten = _write_port(buf,len);
+	int bytesWritten = port->_write(buf,len);
 
 	return bytesWritten;
 }

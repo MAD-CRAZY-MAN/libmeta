@@ -14,21 +14,20 @@
 #include <common/mavlink.h>
 
 
-uint64_t get_time_usec();
 void* start_autopilot_interface_read_thread(void *args);
 void* start_autopilot_interface_write_thread(void *args);
 
-class Autopilot_Interface : public Serial_Port
+class Autopilot_Interface
 {
     public:
-        Autopilot_Interface(Xvd_Metadata &metadata_);
+        Autopilot_Interface(Serial_Port &port);
         ~Autopilot_Interface();
         
         char reading_status;
         char writing_status;
         char control_status;
         uint64_t write_count;
-
+        uint64_t time_unix_usec;
         int system_id;
         int autopilot_id;
         int companion_id;
@@ -45,8 +44,8 @@ class Autopilot_Interface : public Serial_Port
         void stop();
 
     private:
-		Xvd_Metadata *metadata;
-
+        Serial_Port *port;
+           
         bool time_to_exit;
 
         pthread_t read_tid;

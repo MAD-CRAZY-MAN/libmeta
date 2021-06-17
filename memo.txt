@@ -1,0 +1,14 @@
+compile library code
+$ cd libsrc
+$ g++ -fPIC -c -Wall autopilot_interface.cpp user_interface.cpp serial_port.cpp -I ../mavlink/include/mavlink/v2.0/
+
+make Dynamic Shared Library 
+$ g++ -shared autopilot_interface.o user_interface.o serial_port.o -o libmeta.so
+$ mv libmeta.so ../lib
+
+compile main code
+$ cd ..
+$ g++ -Wall -L./lib -I./libsrc ./src/main.cpp -lmeta -o test -I ./mavlink/include/mavlink/v2.0/ -lpthread
+
+run
+$ LD_LIBRARY_PATH=./lib ./test

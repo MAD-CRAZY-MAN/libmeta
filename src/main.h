@@ -15,8 +15,8 @@ using namespace std;
 
 #include <common/mavlink.h>
 
-#include "Inc/serial_port.h"
-#include "Inc/autopilot_interface.h"
-#include "Inc/user_interface.h"
+#include "serial_port.h"
+#include "autopilot_interface.h"
+#include "user_interface.h"
 
 int main(int argc, char **argv);

@@ -1,4 +1,4 @@
-#include "../Inc/user_interface.h"
+#include "user_interface.h"
 
 Serial_Port port;
 Autopilot_Interface autopilot_interface(port);

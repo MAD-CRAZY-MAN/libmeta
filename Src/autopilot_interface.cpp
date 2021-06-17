@@ -3,15 +3,10 @@
 Autopilot_Interface::Autopilot_Interface(Serial_Port &port_)
 {
     // initialize attributes
-	write_count = 0;
-
 	reading_status = 0;      // whether the read thread is running
-	writing_status = 0;      // whether the write thread is running
-	control_status = 0;      // whether the autopilot is in offboard control mode
 	time_to_exit   = false;  // flag to signal thread exit
 
 	read_tid  = 0; // read thread id
-	write_tid = 0; // write thread id
 
 	system_id    = 0; // system id
 	autopilot_id = 0; // autopilot component id
@@ -97,11 +92,6 @@ void Autopilot_Interface::update_receive()
 		
 		if( success )
 			handle_message(msg);
-
-		// give the write thread time to use the port
-		if ( writing_status > false ) {
-			usleep(100); // look for components of batches at 10kHz
-		}
 	
     } // end: while not received all
 	return;
@@ -138,9 +128,7 @@ int Autopilot_Interface::read_message(mavlink_message_t &message)
 	}
 	// Couldn't read from port
 	else
-	{
-		fprintf(stderr, "ERROR: Could not read from fd %d\n", port->fd);
-	}
+		fprintf(stderr, "ERROR: Could not read from fd\n");
 
 	// Done!
 	return msgReceived;

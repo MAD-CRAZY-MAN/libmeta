@@ -11,10 +11,10 @@ int main(int argc, char **argv)
         time_stamps = xvd_metadata_query_timestamp();
         platform_attitude = xvd_metadata_query_platform_attitude();
 
-        //printf("unix_time_stamp: %d", time_stamps.time_boot_ms);
+        printf("unix_time_stamp: %d\n\n", time_stamps.time_boot_ms);
         printf("roll: %f\n", platform_attitude.roll_angle);
         printf("pitch: %f\n", platform_attitude.pitch_angle);
-        printf("yaw: %f\n", platform_attitude.yaw_angle);
+        printf("yaw: %f\n\n", platform_attitude.yaw_angle);
         usleep(1);
     }
 

@@ -28,19 +28,17 @@ class Serial_Port
         bool setup_port(int baud, int data_bits, int stop_bits, bool parity, bool hardware_control);
 
         void register_port(const char *uart_name, int baudrate_);
-        
         int  _read(uint8_t &cp);
         int _write(char *buf, unsigned len);
+
+    private:    
         int fd;
-    private:
         pthread_mutex_t  lock;
         const char *uart_name;
         int baudrate;
         bool is_open;
         
-        void init_defaults();
-
-                
+        void init_defaults();                
 };
 
 #endif

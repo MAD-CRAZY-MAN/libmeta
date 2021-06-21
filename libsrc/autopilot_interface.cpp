@@ -130,6 +130,36 @@ int Autopilot_Interface::read_message(mavlink_message_t &message)
 	else
 		fprintf(stderr, "ERROR: Could not read from fd\n");
 
+	if(msgReceived)
+	{
+		// Report info
+		printf("Received message from UDP with ID #%d (sys:%d|comp:%d):\n", message.msgid, message.sysid, message.compid);
+
+		fprintf(stderr,"Received UDP data: ");
+		unsigned int i;
+		uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+
+		// check message is write length
+		unsigned int messageLength = mavlink_msg_to_send_buffer(buffer, &message);
+
+		// message length error
+		if (messageLength > MAVLINK_MAX_PACKET_LEN)
+		{
+			fprintf(stderr, "\nFATAL ERROR: MESSAGE LENGTH IS LARGER THAN BUFFER SIZE\n");
+		}
+
+		// print out the buffer
+		else
+		{
+			for (i=0; i<messageLength; i++)
+			{
+				unsigned char v=buffer[i];
+				fprintf(stderr,"%02x ", v);
+			}
+			fprintf(stderr,"\n");
+		}
+	}
+
 	// Done!
 	return msgReceived;
 }

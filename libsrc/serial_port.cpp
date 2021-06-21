@@ -23,7 +23,7 @@ void Serial_Port::init_defaults()
 	is_open = false;
 
 	uart_name = (char*)"/dev/ttyACM0";
-	baudrate  = 57600;
+	baudrate  = 115200;
 
 	// Start mutex
 	int result = pthread_mutex_init(&lock, NULL);

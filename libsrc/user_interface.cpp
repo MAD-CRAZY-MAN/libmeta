@@ -6,8 +6,8 @@ Autopilot_Interface autopilot_interface(port);
 void xvd_metadata_query_init()
 {
     autopilot_interface.start();
-    autopilot_interface.request_message(30, 33333);
-    autopilot_interface.request_message(2, 1000000);
+    //autopilot_interface.request_message(30, 33333);
+    //autopilot_interface.request_message(2, 1000000);
 }
 
 void xvd_metadata_query_release()

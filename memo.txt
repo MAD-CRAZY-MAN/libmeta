@@ -12,3 +12,7 @@ $ g++ -Wall -L./lib -I./libsrc ./src/main.cpp -lmeta -o test -I ./mavlink/includ
 
 run
 $ LD_LIBRARY_PATH=./lib ./test
+
+-L 라이브러리 경로
+-l 사용할 라이브러리
+-I 헤더파일 경로
